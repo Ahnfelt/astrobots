@@ -42,11 +42,6 @@ public interface Term {
         }
 
         @Override
-        public Term apply(final String functionName, final Map<String, Term> arguments) {
-            return new Term() { public <T> T accept(Visitor<T> visitor) { return visitor.apply(functionName, arguments); } };
-        }
-
-        @Override
         public Term let(final String name, final Term value, final Term body) {
             return new Term() { public <T> T accept(Visitor<T> visitor) { return visitor.let(name, value, body); } };
         }
@@ -54,6 +49,11 @@ public interface Term {
         @Override
         public Term remember(final String name, final Term initial, final Term step) {
             return new Term() { public <T> T accept(Visitor<T> visitor) { return visitor.remember(name, initial, step); } };
+        }
+
+        @Override
+        public Term apply(final String functionName, final Map<String, Term> arguments) {
+            return new Term() { public <T> T accept(Visitor<T> visitor) { return visitor.apply(functionName, arguments); } };
         }
 
         @Override
