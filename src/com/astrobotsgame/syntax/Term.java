@@ -1,4 +1,4 @@
-package com.astrobotsgame.lambda;
+package com.astrobotsgame.syntax;
 
 import java.util.Map;
 
@@ -13,17 +13,22 @@ public interface Term {
         }
     }
 
+    public enum BinaryOperator {
+        add, sub, mult, div
+    }
+
     public <T> T accept(Visitor<T> visitor);
 
     public interface Visitor<T> {
-        public T number(double value);
-        public T variable(String name);
         public T let(String name, Term value, Term body);
-        public T remember(String name, Term initial, Term step);
+        public T number(double value);
+        public T binary(BinaryOperator operator, Term left, Term right);
+        public T variable(String name);
+        public T state(String name);
         public T apply(String functionName, Map<String, Term> arguments);
         public T record(String typeName, Map<String, Term> fields);
         public T label(String typeName, String fieldName, Term term);
-        public T match(String typeName, Map<String, Case> cases);
+        public T match(String typeName, Map<String, Case> cases, Term term);
         public T constructor(String typeName, String constructorName, Term term);
     }
 
@@ -31,9 +36,20 @@ public interface Term {
 
     // Boilerplate
     public static class Factory implements Visitor<Term> {
+
+        @Override
+        public Term let(final String name, final Term value, final Term body) {
+            return new Term() { public <T> T accept(Visitor<T> visitor) { return visitor.let(name, value, body); } };
+        }
+
         @Override
         public Term number(final double value) {
             return new Term() { public <T> T accept(Visitor<T> visitor) { return visitor.number(value); } };
+        }
+
+        @Override
+        public Term binary(final BinaryOperator operator, final Term left, final Term right) {
+            return new Term() { public <T> T accept(Visitor<T> visitor) { return visitor.binary(operator, left, right); } };
         }
 
         @Override
@@ -42,13 +58,8 @@ public interface Term {
         }
 
         @Override
-        public Term let(final String name, final Term value, final Term body) {
-            return new Term() { public <T> T accept(Visitor<T> visitor) { return visitor.let(name, value, body); } };
-        }
-
-        @Override
-        public Term remember(final String name, final Term initial, final Term step) {
-            return new Term() { public <T> T accept(Visitor<T> visitor) { return visitor.remember(name, initial, step); } };
+        public Term state(final String name) {
+            return new Term() { public <T> T accept(Visitor<T> visitor) { return visitor.state(name); } };
         }
 
         @Override
@@ -67,8 +78,8 @@ public interface Term {
         }
 
         @Override
-        public Term match(final String typeName, final Map<String, Case> cases) {
-            return new Term() { public <T> T accept(Visitor<T> visitor) { return visitor.match(typeName, cases); } };
+        public Term match(final String typeName, final Map<String, Case> cases, final Term term) {
+            return new Term() { public <T> T accept(Visitor<T> visitor) { return visitor.match(typeName, cases, term); } };
         }
 
         @Override
