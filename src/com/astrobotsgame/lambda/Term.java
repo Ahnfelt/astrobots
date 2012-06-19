@@ -18,7 +18,7 @@ public interface Term {
     public interface Visitor<T> {
         public T number(double value);
         public T variable(String name);
-        public T apply(Term function, Term value);
+        public T apply(Term function, Map<String, Term> arguments);
         public T let(String name, Term value, Term body);
         public T remember(String name, Term initial, Term step);
         public T record(String typeName, Map<String, Term> fields);
@@ -42,8 +42,8 @@ public interface Term {
         }
 
         @Override
-        public Term apply(final Term a, final Term b) {
-            return new Term() { public <T> T accept(Visitor<T> visitor) { return visitor.apply(a, b); } };
+        public Term apply(final Term function, final Map<String, Term> arguments) {
+            return new Term() { public <T> T accept(Visitor<T> visitor) { return visitor.apply(function, arguments); } };
         }
 
         @Override
