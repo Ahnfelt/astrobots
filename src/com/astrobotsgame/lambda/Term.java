@@ -18,9 +18,9 @@ public interface Term {
     public interface Visitor<T> {
         public T number(double value);
         public T variable(String name);
-        public T apply(String functionName, Map<String, Term> arguments);
         public T let(String name, Term value, Term body);
         public T remember(String name, Term initial, Term step);
+        public T apply(String functionName, Map<String, Term> arguments);
         public T record(String typeName, Map<String, Term> fields);
         public T label(String typeName, String fieldName, Term term);
         public T match(String typeName, Map<String, Case> cases);
