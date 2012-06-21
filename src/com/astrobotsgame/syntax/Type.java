@@ -16,6 +16,8 @@ public interface Type {
 
     // Boilerplate
     public static class Factory implements Visitor<Type> {
+        private int uniqueCounter = 1;
+
         @Override
         public Type number() {
             return new Type() { public <T> T accept(Visitor<T> visitor) { return visitor.number(); } };
@@ -34,6 +36,10 @@ public interface Type {
         @Override
         public Type recordType(final String name, final List<Type> typeParameters) {
             return new Type() { public <T> T accept(Visitor<T> visitor) { return visitor.recordType(name, typeParameters); } };
+        }
+
+        public Type uniqueVariable() {
+            return variable("alpha-" + uniqueCounter++);
         }
     }
 }
