@@ -6,11 +6,13 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.astrobotsgame.semantics.EvaluatorTest;
 import com.astrobotsgame.syntax.Actor;
 import com.astrobotsgame.syntax.Function;
+import com.astrobotsgame.syntax.SumType;
 import com.astrobotsgame.syntax.Term;
 
 import java.util.Map;
@@ -22,19 +24,23 @@ public class MainActivity extends Activity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(termView(EvaluatorTest.actor(), EvaluatorTest.term()));
+        setContentView(inputView(termView(EvaluatorTest.actor(), EvaluatorTest.term2()), "Value"));
     }
 
     private View termView(final Actor actor, Term term) {
-        return term.accept(new Term.Visitor<View>() {
+        if(term == null) return null;
+        View view = term.accept(new Term.Visitor<View>() {
             private View termView(Term term) {
                 return MainActivity.this.termView(actor, term);
             }
 
             @Override
             public View let(String name, Term value, Term body) {
-                LinearLayout layout = componentLayout();
-                layout.addView(textView("Let " + name + " ="));
+                LinearLayout layout = new LinearLayout(MainActivity.this);
+                layout.setOrientation(LinearLayout.VERTICAL);
+                layout.addView(textView("Let variable"));
+                layout.addView(inputView(textView(name, Color.rgb(0, 100, 0)), "Name"));
+                layout.addView(textView("be equal to"));
                 layout.addView(inputView(termView(value), "Value"));
                 layout.addView(textView("within"));
                 layout.addView(inputView(termView(body), "Body"));
@@ -48,16 +54,17 @@ public class MainActivity extends Activity
 
             @Override
             public View binary(Term.BinaryOperator operator, Term left, Term right) {
-                LinearLayout layout = componentLayout();
-                layout.addView(inputView(termView(left), "Left operand"));
+                LinearLayout layout = new LinearLayout(MainActivity.this);
+                layout.setOrientation(LinearLayout.VERTICAL);
                 switch(operator) {
-                    case add: layout.addView(textView("+")); break;
-                    case sub: layout.addView(textView("-")); break;
-                    case mult: layout.addView(textView("*")); break;
-                    case div: layout.addView(textView("/")); break;
+                    case add: layout.addView(textView("add")); break;
+                    case sub: layout.addView(textView("subtract")); break;
+                    case mult: layout.addView(textView("multiply")); break;
+                    case div: layout.addView(textView("divide")); break;
                     default: throw new RuntimeException("Unknown operator: " + operator);
                 }
-                layout.addView(inputView(termView(right), "Right operand"));
+                layout.addView(inputView(termView(left), "First operand"));
+                layout.addView(inputView(termView(right), "Second operand"));
                 return layout;
             }
 
@@ -100,9 +107,16 @@ public class MainActivity extends Activity
 
             @Override
             public View constructor(String typeName, String constructorName, Term term) {
-                return textView("<constructor>");
+                LinearLayout layout = new LinearLayout(MainActivity.this);
+                layout.setOrientation(LinearLayout.VERTICAL);
+                SumType type = actor.sumTypes.get(typeName);
+                layout.addView(textView(constructorName, Color.rgb(0, 100, 100)));
+                layout.addView(inputView(termView(term), "Value"));
+                return layout;
             }
         });
+        view.setTag(term);
+        return view;
     }
 
     private LinearLayout componentLayout() {
@@ -110,6 +124,11 @@ public class MainActivity extends Activity
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setBackgroundResource(R.drawable.construct);
         layout.setPadding(5, 5, 5, 5);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.FILL_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        layoutParams.setMargins(0, 2, 0, 2);
+        layout.setLayoutParams(layoutParams);
         return layout;
     }
 
@@ -130,14 +149,32 @@ public class MainActivity extends Activity
         LinearLayout layout = componentLayout();
         if(view != null) {
             layout.addView(view);
+            layout.setOnClickListener(editConstructListener);
+            layout.setTag(view.getTag());
+            view.setTag(null);
         } else {
+            layout.setBackgroundResource(R.drawable.construct_empty);
             TextView textView = new TextView(this);
             textView.setText(name);
             textView.setTextColor(Color.GRAY);
             textView.setGravity(Gravity.CENTER);
             textView.setTypeface(Typeface.SANS_SERIF, Typeface.BOLD);
+            textView.setPadding(5, 5, 5, 5);
+            layout.setOnClickListener(editConstructListener);
             layout.addView(textView);
         }
         return layout;
     }
+
+    private static final View.OnClickListener editConstructListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            Term term = (Term) view.getTag();
+            if(term != null) {
+                // edit
+            } else {
+                // create
+            }
+        }
+    };
 }
