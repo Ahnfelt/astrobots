@@ -3,7 +3,7 @@ package com.astrobotsgame.syntax;
 import java.util.List;
 
 public class SumType {
-    public class Constructor {
+    public static class Constructor {
         public final String name;
         public final Type type;
 
@@ -13,6 +13,12 @@ public class SumType {
         }
     }
 
-    public List<String> typeVariables;
-    public List<Constructor> constructors;
+
+    public SumType(List<String> typeVariables, List<Constructor> constructors) {
+        this.typeVariables = typeVariables;
+        this.constructors = constructors;
+    }
+
+    public final List<String> typeVariables;
+    public final List<Constructor> constructors;
 }
