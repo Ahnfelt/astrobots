@@ -14,10 +14,14 @@ public class TypeChecker implements Term.Visitor<Type>{
     private static Type.Factory types = Type.factory;
     private TypeError.Factory typeErrors = TypeError.factory;
 
-    private Map<String, Type> environment = new HashMap<String, Type>();
+    private Map<String, Type> environment;
     private final Map<Term, Type> termTypes = new HashMap<Term, Type>();
     private final Map<Term, TypeError> termTypeErrors = new HashMap<Term, TypeError>();
     private final Map<String, Type> substitutions = new HashMap<String, Type>();
+
+    public TypeChecker(Map<String, Type> environment) {
+        this.environment = environment;
+    }
 
     @Override
     public Type let(String name, Term value, Term body) {
@@ -90,6 +94,10 @@ public class TypeChecker implements Term.Visitor<Type>{
         }
     }
 
+    public Map<String, Type> getEnvironment() {
+        return environment;
+    }
+
     private class UnificationError {
         public final Type type1;
         public final Type type2;
@@ -135,6 +143,11 @@ public class TypeChecker implements Term.Visitor<Type>{
                     public UnificationError recordType(String name, List<Type> typeParameters) {
                         return new UnificationError(type1, type2);
                     }
+
+                    @Override
+                    public UnificationError functionType(Map<String, Type> parameterTypes, Type returnType) {
+                        return new UnificationError(type1, type2);
+                    }
                 });
             }
 
@@ -167,6 +180,11 @@ public class TypeChecker implements Term.Visitor<Type>{
 
                     @Override
                     public UnificationError recordType(String name, List<Type> typeParameters) {
+                        return new UnificationError(type1, type2);
+                    }
+
+                    @Override
+                    public UnificationError functionType(Map<String, Type> parameterTypes, Type returnType) {
                         return new UnificationError(type1, type2);
                     }
                 });
@@ -202,6 +220,51 @@ public class TypeChecker implements Term.Visitor<Type>{
                         } else {
                             return new UnificationError(type1, type2);
                         }
+                    }
+
+                    @Override
+                    public UnificationError functionType(Map<String, Type> parameterTypes, Type returnType) {
+                        return new UnificationError(type1, type2);
+                    }
+                });
+            }
+
+            @Override
+            public UnificationError functionType(final Map<String, Type> parameterTypes, final Type returnType) {
+                return type2.accept(new Type.Visitor<UnificationError>() {
+                    @Override
+                    public UnificationError number() {
+                        return new UnificationError(type1, type2);
+                    }
+
+                    @Override
+                    public UnificationError variable(String name) {
+                        environment = substitute(name, type1, environment);
+                        return null;
+                    }
+
+                    @Override
+                    public UnificationError sumType(String name, List<Type> typeParameters) {
+                        return new UnificationError(type1, type2);
+                    }
+
+                    @Override
+                    public UnificationError recordType(String name2, List<Type> typeParameters2) {
+                        return new UnificationError(type1, type2);
+                    }
+
+                    @Override
+                    public UnificationError functionType(Map<String, Type> parameterTypes2, Type returnType2) {
+                        if (parameterTypes.size() != parameterTypes2.size()) return new UnificationError(type1, type2);
+                        for(String parameter: parameterTypes.keySet()) {
+                            Type type1 = parameterTypes.get(parameter);
+                            Type type2 = parameterTypes2.get(parameter);
+                            if (type2 == null) return new UnificationError(type1, type2);
+                            UnificationError error = unify(type1, type2);
+                            if (error != null) return error;
+                        }
+                        // TODO apply substitution on return types before unification
+                        return unify(returnType, returnType2);
                     }
                 });
             }
@@ -242,6 +305,17 @@ public class TypeChecker implements Term.Visitor<Type>{
                     newTypeParameters.add(newTypeParameter);
                 }
                 return types.recordType(name, newTypeParameters);
+            }
+
+            @Override
+            public Type functionType(Map<String, Type> parameterTypes, Type returnType) {
+                Map<String, Type> newParameterTypes = new HashMap<String, Type>();
+                for (String parameter: parameterTypes.keySet()) {
+                    Type newParameterType = substitute(searchTypeVariableName, replaceType, parameterTypes.get(parameter));
+                    newParameterTypes.put(parameter, newParameterType);
+                }
+                Type newReturnType = substitute(searchTypeVariableName, replaceType, returnType);
+                return types.functionType(parameterTypes, returnType);
             }
         });
     }

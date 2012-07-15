@@ -3,7 +3,7 @@ package com.astrobotsgame.syntax;
 import java.util.List;
 
 public class Record {
-    public class Field {
+    public static class Field {
         public final String name;
         public final Type type;
 
@@ -11,6 +11,11 @@ public class Record {
             this.name = name;
             this.type = type;
         }
+    }
+
+    public Record(List<String> typeVariables, List<Field> fields) {
+        this.typeVariables = typeVariables;
+        this.fields = fields;
     }
 
     public List<String> typeVariables;
