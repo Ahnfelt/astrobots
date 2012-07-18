@@ -9,11 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import com.astrobotsgame.semantics.EvaluatorTest;
-import com.astrobotsgame.syntax.Actor;
-import com.astrobotsgame.syntax.Function;
-import com.astrobotsgame.syntax.SumType;
-import com.astrobotsgame.syntax.Term;
+import com.astrobotsgame.syntax.*;
 
 import java.util.Map;
 
@@ -25,6 +21,19 @@ public class MainActivity extends Activity
     {
         super.onCreate(savedInstanceState);
         setContentView(inputView(termView(EvaluatorTest.actor(), EvaluatorTest.term2()), "Value"));
+        //setContentView(overflow(15));
+    }
+
+    public View overflow(final int count) {
+        if(count <= 0) {
+            TextView textView = new TextView(this);
+            textView.setText("Bottom");
+            return textView;
+        } else {
+            LinearLayout layout = new LinearLayout(this);
+            layout.addView(overflow(count - 1));
+            return layout;
+        }
     }
 
     private View termView(final Actor actor, Term term) {
@@ -92,12 +101,29 @@ public class MainActivity extends Activity
 
             @Override
             public View record(String typeName, Map<String, Term> fields) {
-                return textView("<record>");
+                LinearLayout layout = new LinearLayout(MainActivity.this);
+                layout.setOrientation(LinearLayout.VERTICAL);
+                Record type = actor.records.get(typeName);
+                layout.addView(textView(typeName, Color.rgb(100, 0, 100)));
+                for(Record.Field field: type.fields) {
+                    layout.addView(inputView(termView(fields.get(field.name)), field.name));
+                }
+                return layout;
             }
 
             @Override
             public View label(String typeName, String fieldName, Term term) {
-                return textView("<label>");
+                LinearLayout layout = new LinearLayout(MainActivity.this);
+                layout.setOrientation(LinearLayout.VERTICAL);
+                Record type = actor.records.get(typeName);
+                LinearLayout texts = new LinearLayout(MainActivity.this);
+                texts.setOrientation(LinearLayout.HORIZONTAL);
+                texts.setGravity(Gravity.CENTER);
+                texts.addView(textView(typeName + ".", Color.rgb(100, 100, 100)));
+                texts.addView(textView(fieldName, Color.rgb(100, 0, 100)));
+                layout.addView(texts);
+                layout.addView(inputView(termView(term), "Record"));
+                return layout;
             }
 
             @Override
@@ -110,7 +136,12 @@ public class MainActivity extends Activity
                 LinearLayout layout = new LinearLayout(MainActivity.this);
                 layout.setOrientation(LinearLayout.VERTICAL);
                 SumType type = actor.sumTypes.get(typeName);
-                layout.addView(textView(constructorName, Color.rgb(0, 100, 100)));
+                LinearLayout texts = new LinearLayout(MainActivity.this);
+                texts.setOrientation(LinearLayout.HORIZONTAL);
+                texts.setGravity(Gravity.CENTER);
+                texts.addView(textView(typeName + ".", Color.rgb(100, 100, 100)));
+                texts.addView(textView(constructorName, Color.rgb(0, 100, 100)));
+                layout.addView(texts);
                 layout.addView(inputView(termView(term), "Value"));
                 return layout;
             }
