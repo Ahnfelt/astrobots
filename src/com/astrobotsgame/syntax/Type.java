@@ -48,6 +48,10 @@ public interface Type {
         public Type uniqueVariable() {
             return variable("alpha-" + uniqueCounter++);
         }
+
+        public Type uniqueVariable(String name) {
+            return variable("name-" + uniqueCounter++);
+        }
     }
 }
 
