@@ -98,20 +98,11 @@ public class EvaluatorTest {
 
     public static Actor actor() {
         Actor actor = new Actor();
-<<<<<<< HEAD
-        actor.functions.put("add",
-                new Function(terms.binary(Term.BinaryOperator.add, terms.variable("a"), terms.variable("b")),
-                        Arrays.asList("a", "b")));
-        actor.sumTypes.put("Maybe",
-                new SumType(Collections.singletonList("a"), Arrays.asList(
-                        new SumType.Constructor("Just", types.variable("a"))
-                )));
         actor.records.put("Point",
                 new Record(Collections.<String>emptyList(), Arrays.asList(
                         new Record.Field("x", types.number()),
                         new Record.Field("y", types.number())
                 )));
-=======
         actor.functions.put("add", addFunction());
         actor.functions.put("id", idFunction());
         actor.functions.put("sumTree", sumTreeFunction());
@@ -120,7 +111,6 @@ public class EvaluatorTest {
         actor.records.put("Node", treeNodeType());
         actor.records.put("Unit", unitRecord());
         actor.states.put("iterationCount", iterationCounterState());
->>>>>>> 6f56eb814a6cfd3865905bfa67e5bca49a94088e
         return actor;
     }
 

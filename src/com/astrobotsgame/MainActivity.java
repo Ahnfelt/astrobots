@@ -9,7 +9,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import com.astrobotsgame.semantics.EvaluatorTest;
 import com.astrobotsgame.syntax.*;
+import com.astrobotsgame.ui.TermWidgetView;
+import com.astrobotsgame.ui.TermWidgets;
 
 import java.util.Map;
 
@@ -20,8 +23,12 @@ public class MainActivity extends Activity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(inputView(termView(EvaluatorTest.actor(), EvaluatorTest.term2()), "Value"));
+        //setContentView(inputView(termView(EvaluatorTest.actor(), EvaluatorTest.term2()), "Value"));
         //setContentView(overflow(15));
+        TermWidgetView view = new TermWidgetView(this);
+        TermWidgets.Widget widget = TermWidgets.widget(EvaluatorTest.actor(), EvaluatorTest.term2());
+        view.setWidget(widget);
+        setContentView(view);
     }
 
     public View overflow(final int count) {
@@ -68,12 +75,12 @@ public class MainActivity extends Activity
                 switch(operator) {
                     case add: layout.addView(textView("add")); break;
                     case sub: layout.addView(textView("subtract")); break;
-                    case mult: layout.addView(textView("multiply")); break;
+                    case mult: layout.addView(textView("A * B")); break;
                     case div: layout.addView(textView("divide")); break;
                     default: throw new RuntimeException("Unknown operator: " + operator);
                 }
-                layout.addView(inputView(termView(left), "First operand"));
-                layout.addView(inputView(termView(right), "Second operand"));
+                layout.addView(inputView(termView(left), "[A] * B"));
+                layout.addView(inputView(termView(right), "A * [B]"));
                 return layout;
             }
 
