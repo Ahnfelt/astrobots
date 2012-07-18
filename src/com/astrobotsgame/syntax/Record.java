@@ -21,3 +21,4 @@ public class Record {
     public final List<String> typeVariables;
     public final List<Field> fields;
 }
+
